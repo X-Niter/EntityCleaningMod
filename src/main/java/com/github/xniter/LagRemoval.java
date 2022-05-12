@@ -35,7 +35,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 // The value here should match an entry in the META-INF/mods.toml file
-@Mod("LagRemoval")
+@Mod("lagremoval")
 public class LagRemoval {
     public long l1;
 
