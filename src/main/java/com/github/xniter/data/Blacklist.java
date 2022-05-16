@@ -1,15 +1,14 @@
 package com.github.xniter.data;
 
-import com.github.xniter.util.Utils;
+import com.github.xniter.util.FileUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Blacklist {
     private static List<String> BLACKLIST = new ArrayList<>();
@@ -35,11 +34,11 @@ public class Blacklist {
             saveBlacklist();
             return;
         }
-        BLACKLIST = (List<String>) Utils.readObjectFromFile(List.class, file);
+        BLACKLIST = (List<String>) FileUtils.readObjectFromFile(List.class, file);
     }
 
     public static void saveBlacklist() {
-        Utils.writeObjectToFile(BLACKLIST, "config/Lag Removal/blacklist.json");
+        FileUtils.writeObjectToFile(BLACKLIST, "config/Lag Removal/blacklist.json");
     }
 
     public static void addToBlacklist(Entity e) {
@@ -79,10 +78,10 @@ public class Blacklist {
     }
 
     private static String getKey(Item i) {
-        return i.getRegistryName().toString();
+        return Objects.requireNonNull(i.getRegistryName()).toString();
     }
 
     private static String getKey(Entity e) {
-        return ForgeRegistries.ENTITIES.getRegistryName().toString();
+        return Objects.requireNonNull(e.getType().getRegistryName()).toString();
     }
 }
