@@ -1,8 +1,7 @@
 package com.github.xniter;
 
-import com.github.xniter.commands.CommandReloadBlacklist;
-import com.github.xniter.commands.entitycommands.Blacklisting;
-import com.github.xniter.commands.entitycommands.EntitiesCommands;
+import com.github.xniter.commands.Reload;
+import com.github.xniter.commands.Blacklisting;
 import com.github.xniter.commands.entitycommands.ListAllEntities;
 import com.github.xniter.commands.entitycommands.RemoveEntities;
 import com.github.xniter.config.Config;
@@ -10,7 +9,6 @@ import com.github.xniter.data.Blacklist;
 import com.github.xniter.util.CommandUtils;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.architectury.platform.forge.EventBuses;
 import net.minecraft.ChatFormatting;
@@ -22,7 +20,6 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
@@ -76,6 +73,7 @@ public class LagRemoval {
                 .then(ListAllEntities.register())
                 .then(RemoveEntities.register())
                 .then(Blacklisting.register())
+                .then(Reload.register())
 
         );
         dispatcher.register(Commands.literal("lr")
@@ -87,8 +85,6 @@ public class LagRemoval {
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
-        CommandReloadBlacklist.register(event.getServer().getCommands().getDispatcher());
-        event.getServer().getAllLevels().forEach(serverLevel -> worldsGlobal.add(serverLevel));
         try {
             com.github.xniter.config.Config.loadConfig();
             Blacklist.loadList();
@@ -99,6 +95,7 @@ public class LagRemoval {
 
     @SubscribeEvent
     public void ServerStarted(ServerStartedEvent event) {
+        event.getServer().getAllLevels().forEach(serverLevel -> worldsGlobal.add(serverLevel));
         isServer = true;
     }
 
