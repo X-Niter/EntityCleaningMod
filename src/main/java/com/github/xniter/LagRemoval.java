@@ -1,9 +1,11 @@
 package com.github.xniter;
 
-import com.github.xniter.commands.Reload;
 import com.github.xniter.commands.Blacklisting;
+import com.github.xniter.commands.Reload;
 import com.github.xniter.commands.entitycommands.ListAllEntities;
 import com.github.xniter.commands.entitycommands.RemoveEntities;
+import com.github.xniter.commands.events.StrictLagRemoval;
+import com.github.xniter.commands.worldcommand.ListWorlds;
 import com.github.xniter.config.Config;
 import com.github.xniter.data.Blacklist;
 import com.github.xniter.util.CommandUtils;
@@ -42,6 +44,8 @@ public class LagRemoval {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final String MODID = "lagremoval";
     public static boolean isServer = false;
+
+    public static final Config CONFIG = new Config();
     public long l1;
 
     private static int counter = 0;
@@ -61,7 +65,16 @@ public class LagRemoval {
 
     public LagRemoval() {
         MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.register(StrictLagRemoval.class);
         EventBuses.registerModEventBus(LagRemoval.MODID, FMLJavaModLoadingContext.get().getModEventBus());
+        Config.loadConfig();
+
+        try {
+            Blacklist.loadList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        LOGGER.info("LagRemoval Loaded, loading config files");
     }
 
     @SubscribeEvent
@@ -74,6 +87,7 @@ public class LagRemoval {
                 .then(RemoveEntities.register())
                 .then(Blacklisting.register())
                 .then(Reload.register())
+                .then(ListWorlds.register())
 
         );
         dispatcher.register(Commands.literal("lr")
@@ -81,81 +95,14 @@ public class LagRemoval {
                 .redirect(cmd)
         );
 
-    }
+        LOGGER.info("Registered 5 Command Nodes");
 
-    @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
-        try {
-            com.github.xniter.config.Config.loadConfig();
-            Blacklist.loadList();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @SubscribeEvent
     public void ServerStarted(ServerStartedEvent event) {
         event.getServer().getAllLevels().forEach(serverLevel -> worldsGlobal.add(serverLevel));
         isServer = true;
-    }
-
-    @SubscribeEvent
-    public void serverTickEvent(TickEvent.ServerTickEvent event) {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        if (this.l1 != System.currentTimeMillis() / 1000) {
-            this.l1 = System.currentTimeMillis() / 1000;
-            this.seconds++;
-        }
-        if (Config.INSTANCE.show_warning) {
-            if (this.seconds == com.github.xniter.config.Config.INSTANCE.auto_clear_delay * 60 - 30 && !this.w30) {
-                sendToAll(server, "" + ChatFormatting.BLUE + "[Lag Removal] " + ChatFormatting.GREEN + "Entities will be removed in 30 seconds");
-                this.w30 = true;
-            }
-            if (this.seconds == Config.INSTANCE.auto_clear_delay * 60 - 29) {
-                this.w30 = false;
-            }
-
-
-            if (this.seconds == com.github.xniter.config.Config.INSTANCE.auto_clear_delay * 60 - 5 && !this.w5) {
-                sendToAll(server, "" + ChatFormatting.BLUE + "[Lag Removal] " + ChatFormatting.GREEN + "Entities will be removed in" + ChatFormatting.RED + " 5 " + ChatFormatting.GREEN + "seconds");
-                this.w5 = true;
-            }
-            if (this.seconds == Config.INSTANCE.auto_clear_delay * 60 - 4) {
-                this.w5 = false;
-            }
-
-            if (this.seconds == com.github.xniter.config.Config.INSTANCE.auto_clear_delay * 60 - 3 && !this.w3) {
-                sendToAll(server, "" + ChatFormatting.BLUE + "[Lag Removal] " + ChatFormatting.GREEN + "Entities will be removed in" + ChatFormatting.RED + " 3 " + ChatFormatting.GREEN + "seconds");
-                this.w3 = true;
-            }
-            if (this.seconds == Config.INSTANCE.auto_clear_delay * 60 - 2.9) {
-                this.w3 = false;
-            }
-
-
-            if (this.seconds == com.github.xniter.config.Config.INSTANCE.auto_clear_delay * 60 - 2 && !this.w2) {
-                sendToAll(server, "" + ChatFormatting.BLUE + "[Lag Removal] " + ChatFormatting.GREEN + "Entities will be removed in" + ChatFormatting.RED + " 2 " + ChatFormatting.GREEN + "seconds");
-                this.w2 = true;
-            }
-            if (this.seconds == Config.INSTANCE.auto_clear_delay * 60 - 1.9) {
-                this.w2 = false;
-            }
-
-            if (this.seconds == com.github.xniter.config.Config.INSTANCE.auto_clear_delay * 60 - 1 && !this.w1) {
-                sendToAll(server, "" + ChatFormatting.BLUE + "[Lag Removal] " + ChatFormatting.GREEN + "Entities will be removed in" + ChatFormatting.RED + " 1 " + ChatFormatting.GREEN + "second");
-                this.w1 = true;
-            }
-            if (this.seconds == Config.INSTANCE.auto_clear_delay * 60 - 0.9) {
-                this.w1 = false;
-            }
-
-            if (this.seconds == com.github.xniter.config.Config.INSTANCE.auto_clear_delay * 60 && !this.w60) {
-                server.getCommands().performCommand(server.createCommandSourceStack(),"lr clear all");
-                this.w60 = true;
-                this.seconds = 0;
-            }
-
-        }
     }
 
     static Random rand = new Random();
