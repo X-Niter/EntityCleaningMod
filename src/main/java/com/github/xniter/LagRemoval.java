@@ -6,14 +6,15 @@ import com.github.xniter.commands.entitycommands.ListAllEntities;
 import com.github.xniter.commands.entitycommands.RemoveEntities;
 import com.github.xniter.commands.events.StrictLagRemoval;
 import com.github.xniter.commands.worldcommand.ListWorlds;
-import com.github.xniter.config.Config;
+import com.github.xniter.config.CommonConfig;
+import com.github.xniter.config.ConfigHolder;
+import com.github.xniter.config.LRConfig;
 import com.github.xniter.data.Blacklist;
 import com.github.xniter.util.CommandUtils;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.architectury.platform.forge.EventBuses;
-import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -24,16 +25,18 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.server.ServerLifecycleHooks;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+import java.lang.module.Configuration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -45,7 +48,6 @@ public class LagRemoval {
     public static final String MODID = "lagremoval";
     public static boolean isServer = false;
 
-    public static final Config CONFIG = new Config();
     public long l1;
 
     private static int counter = 0;
@@ -61,20 +63,37 @@ public class LagRemoval {
     public boolean w2;
     public boolean w1;
 
+    public static File configDir;
+    public static Configuration config;
+
     public static List<ServerLevel> worldsGlobal = new ArrayList<>();
 
     public LagRemoval() {
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(StrictLagRemoval.class);
         EventBuses.registerModEventBus(LagRemoval.MODID, FMLJavaModLoadingContext.get().getModEventBus());
-        Config.loadConfig();
+        final ModLoadingContext modLoadingContext = ModLoadingContext.get();
+        modLoadingContext.registerConfig(ModConfig.Type.COMMON, ConfigHolder.COMMON_SPEC, "Lag Removal/LagRemoval.toml");
+        //GeneralConfig.loadConfig();
 
         try {
             Blacklist.loadList();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        LOGGER.info("LagRemoval Loaded, loading config files");
+        LOGGER.info("Initializing LagRemoval");
+    }
+
+
+    @SubscribeEvent
+    public void onModConfigEvent(final ModConfigEvent event) {
+        final ModConfig config = event.getConfig();
+
+        // Rebake the configs when they change
+
+        if (config.getSpec() == ConfigHolder.COMMON_SPEC) {
+            LRConfig.bake(config);
+        }
     }
 
     @SubscribeEvent
@@ -101,6 +120,7 @@ public class LagRemoval {
 
     @SubscribeEvent
     public void ServerStarted(ServerStartedEvent event) {
+        LOGGER.info("LagRemoval Successfully Loaded");
         event.getServer().getAllLevels().forEach(serverLevel -> worldsGlobal.add(serverLevel));
         isServer = true;
     }

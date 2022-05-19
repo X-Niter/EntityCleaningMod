@@ -1,7 +1,6 @@
 package com.github.xniter.commands;
 
 
-import com.github.xniter.config.Config;
 import com.github.xniter.data.Blacklist;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import net.minecraft.ChatFormatting;
@@ -14,7 +13,7 @@ public class Reload {
         return Commands.literal("reload")
                 .executes(commandContext -> {
                     try {
-                        Config.loadConfig();
+                        ;
                         Blacklist.loadList();
                         (commandContext.getSource()).sendSuccess(new TextComponent(ChatFormatting.BLUE + "[Lag Removal]" + ChatFormatting.GREEN + "Reloaded"), true);
                     } catch (Exception e) {

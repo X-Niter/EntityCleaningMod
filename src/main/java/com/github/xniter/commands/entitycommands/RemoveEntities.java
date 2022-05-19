@@ -1,7 +1,8 @@
 package com.github.xniter.commands.entitycommands;
 
 import com.github.xniter.LagRemoval;
-import com.github.xniter.config.Config;
+import com.github.xniter.config.CommonConfig;
+import com.github.xniter.config.LRConfig;
 import com.github.xniter.data.Blacklist;
 import com.github.xniter.util.CommandUtils;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -14,18 +15,14 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.server.ServerLifecycleHooks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,11 +72,11 @@ public class RemoveEntities {
                 if (!(e instanceof net.minecraft.server.level.ServerPlayer))
                     if (e instanceof ItemEntity) {
                         ItemStack item = ((ItemEntity) e).getItem();
-                        if (!Blacklist.isBlacklisted(item.getItem()) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !e.hasCustomName())) {
+                        if (!Blacklist.isBlacklisted(item.getItem()) && (!LRConfig.prevent_named_entity_removal || !e.hasCustomName())) {
                             allI.add(e);
                         }
                     } else if (e instanceof LivingEntity) {
-                        if (!Blacklist.isBlacklisted(e) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !e.hasCustomName())) {
+                        if (!Blacklist.isBlacklisted(e) && (!LRConfig.prevent_named_entity_removal || !e.hasCustomName())) {
                             allE.add(e);
                         }
                     }
@@ -94,7 +91,7 @@ public class RemoveEntities {
         if (allI.size() > 0) {
             allI.forEach(e -> {
                 ItemStack item = ((ItemEntity) e).getItem();
-                if (!Blacklist.isBlacklisted(item.getItem()) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !e.hasCustomName())) {
+                if (!Blacklist.isBlacklisted(item.getItem()) && (!LRConfig.prevent_named_entity_removal || !e.hasCustomName())) {
 
                     e.remove(Entity.RemovalReason.DISCARDED);
                     counter++;
@@ -105,7 +102,7 @@ public class RemoveEntities {
 
         if (allE.size() > 0) {
             allE.forEach(e -> {
-                if (!Blacklist.isBlacklisted(e) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !e.hasCustomName())) {
+                if (!Blacklist.isBlacklisted(e) && (!LRConfig.prevent_named_entity_removal || !e.hasCustomName())) {
                     e.remove(Entity.RemovalReason.DISCARDED);
                     counter++;
                 }
@@ -125,17 +122,17 @@ public class RemoveEntities {
         List<ServerLevel> worlds = CommandUtils.getWorlds(context);
         worlds.forEach(world -> world.getEntities().getAll().forEach(e -> {
             if (type == null) {
-                if (!Blacklist.isBlacklisted(e) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !e.hasCustomName())) {
+                if (!Blacklist.isBlacklisted(e) && (!LRConfig.prevent_named_entity_removal || !e.hasCustomName())) {
                     allE.add(e);
                 }
             }
-            if (e.getType().getRegistryName() != null && e.getType().getRegistryName().equals(type) && !Blacklist.isBlacklisted(e) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !e.hasCustomName())) {
+            if (e.getType().getRegistryName() != null && e.getType().getRegistryName().equals(type) && !Blacklist.isBlacklisted(e) && (!LRConfig.prevent_named_entity_removal || !e.hasCustomName())) {
                 allType.add(e);
             }
         }));
         if (allType.size() > 0) {
             allType.forEach(e -> {
-                if (e.getType().getRegistryName() != null && e.getType().getRegistryName().equals(type) && !Blacklist.isBlacklisted(e) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !e.hasCustomName())) {
+                if (e.getType().getRegistryName() != null && e.getType().getRegistryName().equals(type) && !Blacklist.isBlacklisted(e) && (!LRConfig.prevent_named_entity_removal || !e.hasCustomName())) {
                     e.remove(Entity.RemovalReason.DISCARDED);
                     counter++;
                 }
@@ -143,7 +140,7 @@ public class RemoveEntities {
         }
         if (allE.size() > 0) {
             allE.forEach(e -> {
-                if (!Blacklist.isBlacklisted(e) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !e.hasCustomName())) {
+                if (!Blacklist.isBlacklisted(e) && (!LRConfig.prevent_named_entity_removal || !e.hasCustomName())) {
                     e.remove(Entity.RemovalReason.DISCARDED);
                     counter++;
                 }
@@ -163,13 +160,13 @@ public class RemoveEntities {
             if (e instanceof ItemEntity) {
                 if (type == null) {
                     ItemStack item = ((ItemEntity) e).getItem();
-                    if (!Blacklist.isBlacklisted(item.getItem()) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !e.hasCustomName())) {
+                    if (!Blacklist.isBlacklisted(item.getItem()) && (!LRConfig.prevent_named_entity_removal || !e.hasCustomName())) {
                         itemL.add(e);
                     }
                 }
                 else if (e.getName().getString().contains(type)) {
                     ItemStack item = ((ItemEntity) e).getItem();
-                    if (!Blacklist.isBlacklisted(item.getItem()) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !e.hasCustomName())) {
+                    if (!Blacklist.isBlacklisted(item.getItem()) && (!LRConfig.prevent_named_entity_removal || !e.hasCustomName())) {
                         itemLType.add(e);
                     }
                 }
@@ -178,7 +175,7 @@ public class RemoveEntities {
 
         if (itemLType.size() > 0) {
             itemLType.forEach(e -> {
-                if (e.getType().getRegistryName() != null && e.getType().getRegistryName().equals(type) && !Blacklist.isBlacklisted(e) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !e.hasCustomName())) {
+                if (e.getType().getRegistryName() != null && e.getType().getRegistryName().equals(type) && !Blacklist.isBlacklisted(e) && (!LRConfig.prevent_named_entity_removal || !e.hasCustomName())) {
                     e.remove(Entity.RemovalReason.DISCARDED);
                     counter++;
                 }
@@ -186,7 +183,7 @@ public class RemoveEntities {
         }
         if (itemL.size() > 0) {
             itemL.forEach(e -> {
-                if (!Blacklist.isBlacklisted(e) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !e.hasCustomName())) {
+                if (!Blacklist.isBlacklisted(e) && (!LRConfig.prevent_named_entity_removal || !e.hasCustomName())) {
                     e.remove(Entity.RemovalReason.DISCARDED);
                     counter++;
                 }
@@ -203,14 +200,14 @@ public class RemoveEntities {
         List<Entity> hostiles = new ArrayList<>();
         List<ServerLevel> worlds = CommandUtils.getWorlds(context);
         worlds.forEach(world -> world.getEntities().getAll().forEach(e -> {
-            if (e.getType().getCategory() == MobCategory.MONSTER && !Blacklist.isBlacklisted(e) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !e.hasCustomName())) {
+            if (e.getType().getCategory() == MobCategory.MONSTER && !Blacklist.isBlacklisted(e) && (!LRConfig.prevent_named_entity_removal || !e.hasCustomName())) {
                 hostiles.add(e);
             }
         }));
 
         if (hostiles.size() > 0) {
             hostiles.forEach(hostile -> {
-                if (hostile.getType().getCategory() == MobCategory.MONSTER && !Blacklist.isBlacklisted(hostile) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !hostile.hasCustomName())) {
+                if (hostile.getType().getCategory() == MobCategory.MONSTER && !Blacklist.isBlacklisted(hostile) && (!LRConfig.prevent_named_entity_removal || !hostile.hasCustomName())) {
 
                     hostile.remove(Entity.RemovalReason.DISCARDED);
                     counter++;
@@ -227,13 +224,13 @@ public class RemoveEntities {
         List<Entity> Ambient = new ArrayList<>();
         List<ServerLevel> worlds = CommandUtils.getWorlds(context);
         worlds.forEach(world -> world.getEntities().getAll().forEach(e -> {
-            if (e.getType().getCategory() == MobCategory.AMBIENT && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !e.hasCustomName()))
+            if (e.getType().getCategory() == MobCategory.AMBIENT && (!LRConfig.prevent_named_entity_removal || !e.hasCustomName()))
                 Ambient.add(e);
         }));
 
         if (Ambient.size() > 0) {
             Ambient.forEach(a -> {
-                if (a.getType().getCategory() == MobCategory.MONSTER && !Blacklist.isBlacklisted(a) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !a.hasCustomName())) {
+                if (a.getType().getCategory() == MobCategory.MONSTER && !Blacklist.isBlacklisted(a) && (!LRConfig.prevent_named_entity_removal || !a.hasCustomName())) {
                     a.remove(Entity.RemovalReason.DISCARDED);
                     counter++;
                 }
@@ -256,7 +253,7 @@ public class RemoveEntities {
 
         if (Creature.size() > 0) {
             Creature.forEach(c -> {
-                if (c.getType().getCategory() == MobCategory.CREATURE && !Blacklist.isBlacklisted(c) && (!LagRemoval.CONFIG.prevent_named_entity_removal() || !c.hasCustomName())) {
+                if (c.getType().getCategory() == MobCategory.CREATURE && !Blacklist.isBlacklisted(c) && (!LRConfig.prevent_named_entity_removal || !c.hasCustomName())) {
                     c.remove(Entity.RemovalReason.DISCARDED);
                     counter++;
                 }
