@@ -15,7 +15,7 @@ public class Blacklist {
 
     public static void loadList() throws Exception {
         BLACKLIST.clear();
-        File file = new File("config/Lag Removal/blacklist.json");
+        File file = new File("world/serverconfig/Lag Removal/blacklist.json");
         if (!file.getParentFile().exists())
             file.getParentFile().mkdirs();
         if (!file.exists()) {
@@ -38,7 +38,7 @@ public class Blacklist {
     }
 
     public static void saveBlacklist() {
-        FileUtils.writeObjectToFile(BLACKLIST, "config/Lag Removal/blacklist.json");
+        FileUtils.writeObjectToFile(BLACKLIST, "world/serverconfig/Lag Removal/blacklist.json");
     }
 
     public static void addToBlacklist(Entity e) {
