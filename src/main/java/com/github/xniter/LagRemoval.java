@@ -4,11 +4,10 @@ import com.github.xniter.commands.Blacklisting;
 import com.github.xniter.commands.Reload;
 import com.github.xniter.commands.entitycommands.ListAllEntities;
 import com.github.xniter.commands.entitycommands.RemoveEntities;
-import com.github.xniter.commands.events.StrictLagRemoval;
+import com.github.xniter.commands.events.LimiterClearEvent;
+import com.github.xniter.commands.events.StrictClearEvent;
 import com.github.xniter.commands.worldcommand.ListWorlds;
 import com.github.xniter.config.CommonConfig;
-import com.github.xniter.config.ConfigHolder;
-import com.github.xniter.config.LRConfig;
 import com.github.xniter.data.Blacklist;
 import com.github.xniter.util.CommandUtils;
 import com.mojang.brigadier.CommandDispatcher;
@@ -30,13 +29,10 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.lang.module.Configuration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -46,55 +42,29 @@ import java.util.Random;
 public class LagRemoval {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final String MODID = "lagremoval";
+    public static final CommonConfig LRConfig = new CommonConfig();
     public static boolean isServer = false;
-
-    public long l1;
-
-    private static int counter = 0;
-
-    public int seconds;
-
-    public boolean w60;
-
-    public boolean w30;
-
-    public boolean w5;
-    public boolean w3;
-    public boolean w2;
-    public boolean w1;
-
-    public static File configDir;
-    public static Configuration config;
 
     public static List<ServerLevel> worldsGlobal = new ArrayList<>();
 
     public LagRemoval() {
         MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(StrictLagRemoval.class);
+        MinecraftForge.EVENT_BUS.register(new StrictClearEvent());
+        MinecraftForge.EVENT_BUS.register(new LimiterClearEvent());
         EventBuses.registerModEventBus(LagRemoval.MODID, FMLJavaModLoadingContext.get().getModEventBus());
         final ModLoadingContext modLoadingContext = ModLoadingContext.get();
-        modLoadingContext.registerConfig(ModConfig.Type.COMMON, ConfigHolder.COMMON_SPEC, "Lag Removal/LagRemoval.toml");
-        //GeneralConfig.loadConfig();
+        modLoadingContext.registerConfig(ModConfig.Type.SERVER, LRConfig.getSpec(), "Lag Removal/lagremoval-server.toml");
 
         try {
             Blacklist.loadList();
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
         LOGGER.info("Initializing LagRemoval");
     }
 
-
-    @SubscribeEvent
-    public void onModConfigEvent(final ModConfigEvent event) {
-        final ModConfig config = event.getConfig();
-
-        // Rebake the configs when they change
-
-        if (config.getSpec() == ConfigHolder.COMMON_SPEC) {
-            LRConfig.bake(config);
-        }
-    }
 
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
