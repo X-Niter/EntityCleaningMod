@@ -13,9 +13,8 @@ public class Reload {
         return Commands.literal("reload")
                 .executes(commandContext -> {
                     try {
-                        ;
                         Blacklist.loadList();
-                        (commandContext.getSource()).sendSuccess(new TextComponent(ChatFormatting.BLUE + "[Lag Removal]" + ChatFormatting.GREEN + "Reloaded"), true);
+                        (commandContext.getSource()).sendSuccess(new TextComponent(ChatFormatting.BLUE + "[Lag Removal] " + ChatFormatting.GREEN + "Reloaded"), true);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
